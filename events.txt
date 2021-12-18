@@ -1,0 +1,16 @@
+A Special Place
+You have found a special room ! Congratulations ! :)
+0,100
+ASpecialPlace,ASpecialPlace
+0
+Testrooms,True
+continue
+===
+Glitched Through Reality
+You just landed in a place filled with empty rooms
+0,100
+0,ASpecialPlace
+0
+Backrooms,True
+continue
+===

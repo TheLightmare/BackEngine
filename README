@@ -1,0 +1,58 @@
+How to create a room :
+
+1) download and resize a picture for your room :
+    - The engine will automatically center it, so no need to worry about the exact size.
+    - name it the way you like. Make sure it is a ".png" format.
+    - put it inside the "pictures" folder
+
+2) download the song for your room (/!\ .wav format only /!\):
+    - if you don't want one, the engine will just make your room silent
+    - name it as you like, don't forget the ".wav" at the end
+    - put it inside the "music" folder
+
+3) go into "rooms.txt" and write down these informations on the first 3 lines :
+
+    1: room_name NEIGHBOURS:room1,room2,room3
+    2: description of the room. Do not add newlines.
+    3: ACTIONS:action1,action2,action3
+    4: music_name,picture_name
+
+    -> Everything written in capitals and followed with ":" must not be written,
+       i just wrote that down for explanation.
+    -> "NEIGHBOURS:" section specifies the neighbouring rooms.
+       Write here the name of the rooms you can access from your room.
+       /!\ The limit is 3 accessible rooms /!\
+    -> "ACTIONS:" section specifies the possible actions inside your room. for instance :
+            - "go_back" : for the player to be able to return to his previous position
+            - "go_left" : the player will be able to go to the first specified room in the "NEIGHBOURS:" section
+            - "go_forward" : same thing as above but for the second room
+            - "go_right" : same thing as above but for the third room
+
+
+How to create an event :
+
+1) download an image for your event :
+        - must be a .png
+        - put it in "pictures" folder
+
+2) download a sound for the event :
+        - must be a .wav
+        - put it in "sounds" folder
+
+3) go into "events.txt" and complete the lines as following :
+        1: event_name
+        2: The text your event will display
+        3: sanity_min,sanity_max (from 0 to 100)
+        4: picture_name,sound_name
+        5: chances of happening (from 0 to 100)
+        6: room_name,is_unique
+        7: actions
+
+        Explanations :
+        -> The 3rd line specifies the values of sanity between which the event can occur
+        -> The 5th line specifies the probability of the event
+        -> The 6th line specifies :
+                    - the room where the event occurs. Put 0 instead if the event can occur anywhere
+                    - True or False : the unicity of the event. If the event can occur several times or not
+        -> The 7th line specifies the actions possible during the event :
+                    - "continue" : will allow the player to proceed to the room.
