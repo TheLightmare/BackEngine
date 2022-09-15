@@ -1,0 +1,8 @@
+give_up
+You give up.
+DEATH
+===
+touch_grass
+You Touch Grass
+DEATH
+===

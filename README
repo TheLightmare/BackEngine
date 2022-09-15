@@ -1,13 +1,3 @@
-COMPILE PROJECT :
-
-1) Install pyinstaller : 'pip install pyinstaller'
-
-2) In the source folder of the project, open a terminal : 'pyinstaller -F cli.py'
-
-3) Copy-paste the "dist/cli.exe" in the source folder
-
-4) run it
-
 How to create a room :
 
 1) download and resize a picture for your room :

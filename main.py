@@ -1,73 +1,37 @@
+import time
+import pypresence
+
 import pygame as pg
+
+import PointClick
 from settings import *
-import room
 import button
-import event
+import utils
 
 pg.init()
 
-
-def load_events():
-    events = []
-    with open("events.txt") as f:
-        lines = f.readlines()
-        for i in range(0, len(lines), 8):
-            sanity_level = lines[i+2].strip().split(",")
-            (picture, sound) = lines[i+3].strip().split(",")
-            chance = lines[i+4].strip()
-            (location, isUnique) = lines[i+5].strip().split(",")
-            actions = lines[i+6].strip().split(",")
-            if isUnique == "True":
-                isUnique = True
-            else:
-                isUnique = False
-            events.append(event.Event(lines[i].strip(), lines[i+1].strip(), sanity_level, picture,
-                                      sound, actions, int(chance), location, isUnique))
-    return events
+#Discord Rich Presence. Yes that's useless but hey, 4 lines of code !
+#TODO : make RPC moddable
+RPC = pypresence.Presence(CLIENT_ID)
+RPC.connect()
+duration = time.time()
+RPC.update(state="Level 0", details="Lost in the Backrooms", large_image="backrooms", start=duration)
 
 
-def load_rooms():
-    rooms = []
-    with open("rooms.txt") as f:
-        lines = f.readlines()
-        for i in range(0, len(lines), 5):
-            roomtext = lines[i].strip().split(" ")
-            roomtext.append(lines[i+1].strip())
-            roomtext.append(lines[i+2].strip())
-            roomtext.append(lines[i+3].strip())
-            neighbours = roomtext[1].split(",")
-            actions = roomtext[3].split(",")
-            (music, picture) = roomtext[4].split(",")
-            rooms.append(room.Room(roomtext[0], neighbours,
-                                   roomtext[2], actions, music, picture))
-    return rooms
-
-
-def load_picture(name):
-    try :
-        picture = pg.image.load(IMAGE_FOLDER + name + ".png")
-    except :
-        picture = pg.image.load(IMAGE_FOLDER + "Backrooms.png")
-    return picture
-
-
-def print_text(screen, text, height, font, color):
-    textsurface = font.render(text, False, color)
-    textrect = textsurface.get_rect(center=(WIDTH / 2, height))
-    screen.blit(textsurface, textrect)
-
-
+#TODO : add point-and-click mechanic (ffs that will be hurtful to make...)
 class Game():
     def __init__(self):
         self.screen = pg.display.set_mode((WIDTH, HEIGHT))
+        pg.display.set_caption("BackEngine")
 
-        self.rooms = load_rooms()
-        self.events = load_events()
+        self.rooms = utils.load_rooms()
+        self.events = utils.load_events()
+        self.actions = utils.load_actions()
         self.text_font = pg.font.Font(FONT_FOLDER + FONT_NAME, 30)
         self.title_font = pg.font.Font(FONT_FOLDER + FONT_NAME, 60)
 
         self.previous_room = self.rooms[0]
-        self.current_room = self.rooms[1]
+        self.current_room = utils.load_save(self.rooms)
         pg.mixer.music.load(MUSIC_FOLDER + self.current_room.music + ".wav")
         pg.mixer.music.play(-1)
 
@@ -75,13 +39,38 @@ class Game():
         self.current_event = None
         self.sanity = 100
 
+    # player death management
+    def death(self):
+        time.sleep(5)
+        pg.mixer.music.stop()
+        self.screen.fill(BLACK)
+
+        utils.print_text(self.screen, "death won't save you.", HEIGHT/2, self.title_font, RED)
+        pg.display.flip()
+        time.sleep(5)
+
+        self.load_room("Backrooms", False)
+        self.sanity = 100
+
+    # parse and execute custom actions (loaded from actions.txt file)
+    def do_custom_action(self, action):
+        for act in self.actions:
+            if act[0] == action:
+                utils.print_text(self.screen, act[1], (3 / 4) * HEIGHT, self.text_font, WHITE)
+                if act[2] == "DEATH":
+                    self.sanity = 0
+                pg.display.flip()
+
+
     def event_handler(self):
         for event in pg.event.get():
             if event.type == pg.QUIT:
-                pg.quit()
+                utils.save_game(self.current_room)
+                self.playing = False
             if event.type == pg.KEYDOWN:
                 if event.key == pg.K_ESCAPE :
-                    pg.quit()
+                    utils.save_game(self.current_room)
+                    self.playing = False
             if not self.isInEvent :
                 for button in self.current_room.buttons :
                     button.click(event)
@@ -115,10 +104,10 @@ class Game():
         text = event.text
         picture = event.picture
 
-        print_text(self.screen, name, 40, self.title_font, RED)
-        print_text(self.screen, text, (3/4) * HEIGHT, self.text_font, WHITE)
+        utils.print_text(self.screen, name, 40, self.title_font, RED)
+        utils.print_text(self.screen, text, (3/4) * HEIGHT, self.text_font, WHITE)
 
-        surface = load_picture(picture)
+        surface = utils.load_picture(picture)
         width = surface.get_width()
         heigth = surface.get_height()
 
@@ -132,10 +121,10 @@ class Game():
         text = self.current_room.text
         picture = self.current_room.picture
 
-        print_text(self.screen, name, 40, self.title_font, WHITE)
-        print_text(self.screen, text, (3/4) * HEIGHT, self.text_font, WHITE)
+        utils.print_text(self.screen, name, 40, self.title_font, WHITE)
+        utils.print_text(self.screen, text, (3/4) * HEIGHT, self.text_font, WHITE)
 
-        surface = load_picture(picture)
+        surface = utils.load_picture(picture)
         width = surface.get_width()
         heigth = surface.get_height()
 
@@ -147,6 +136,9 @@ class Game():
             if room.name == name :
                 self.previous_room = self.current_room
                 self.current_room = room
+
+        # update discord Rich Presence status
+        utils.update_rpc(RPC, self.current_room, duration)
 
         # look if for possible events
         if not self.isInEvent and eventCheck:
@@ -160,6 +152,7 @@ class Game():
                     pg.mixer.music.play(1)
                     return
 
+        # music switcher ! if the room has same music as previous one, it justs continues ! magic !
         if self.previous_room.music != self.current_room.music :
             try :
                 pg.mixer.music.load(MUSIC_FOLDER + self.current_room.music + ".wav")
@@ -172,6 +165,7 @@ class Game():
 
 
     def do_action(self, action):
+        # possible actions inside of rooms
         if action == "go_left":
             self.load_room(self.current_room.neighbours[0], True)
         elif action == "go_forward":
@@ -180,11 +174,19 @@ class Game():
             self.load_room(self.current_room.neighbours[2], True)
         elif action == "go_back":
             self.load_room(self.previous_room.name, True)
-
-        if action == "continue" :
+        elif action == "examine":
+            PointClick.load_point_click(self.screen, self)
+        # possible actions inside of events
+        elif action == "continue" :
             self.isInEvent = False
             self.current_event = None
             self.load_room(self.current_room, False)
+        # custom actions (often room-specific)
+        else :
+            self.do_custom_action(action)
+
+        if self.sanity <= 0 :
+            self.death()
 
 
     def run(self):
@@ -200,5 +202,8 @@ class Game():
                     b.show()
             pg.display.flip()
 
+
+# the actual engine lmao
 g = Game()
 g.run()
+pg.quit()

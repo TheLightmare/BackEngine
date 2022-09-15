@@ -1,15 +1,15 @@
 Testrooms 0,0,0
 You should not be there.
-go_back,give_up
+go_back,touch_grass,give_up
 Testrooms,Testrooms
 ===
-Backrooms 0,Frontrooms,0
+Backrooms 0,Darkrooms,0
 You are lost in the Backrooms.
-go_forward
+go_forward,examine
 Backrooms,Backrooms
 ===
-Frontrooms Backrooms,0,Testrooms
-You continue to walk forward, and slowly the place starts to get darker.
+Darkrooms Backrooms,0,Testrooms
+You continue to walk forward. | Slowly the place starts to get darker.
 go_back,go_left,go_right
 Backrooms,Frontrooms
 ===

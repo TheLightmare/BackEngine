@@ -1,6 +1,6 @@
 import pygame
 
-
+# finally some good fucking buttons
 class Button:
     """Create a button, then blit the surface in the while loop"""
 
@@ -25,9 +25,11 @@ class Button:
         self.surface.fill(bg)
         self.surface.blit(self.textsurface, (0, 0))
         self.rect = pygame.Rect(self.x, self.y, self.size[0], self.size[1])
+        self.frame = pygame.Rect(self.x - 3, self.y + 30, self.size[0] + 3, 0)
 
     def show(self):
         self.screen.blit(self.surface, (self.x, self.y))
+        pygame.draw.rect(self.screen, pygame.Color("White"), self.frame, 1)
 
     def click(self, event):
         x, y = pygame.mouse.get_pos()

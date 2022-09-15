@@ -1,6 +1,9 @@
 import random
 
 
+# event class, allowing for flexibility around making random or scripted events
+#TODO : conditional events and event chains
+#TODO : event probability even with single rooms
 class Event():
     def __init__(self, name, text, sanity_level, picture, sound, actions, chance, location, isUnique):
         self.name = name
@@ -16,6 +19,7 @@ class Event():
 
         self.active = True
 
+    # check if event can be triggered
     def trigger(self, game):
         if not self.active :
             return False

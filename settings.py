@@ -9,6 +9,8 @@ FONT_NAME = "Caladea-Regular.ttf"
 MUSIC_FOLDER = "music/"
 SOUND_FOLDER = "sounds/"
 
+CLIENT_ID = '921703956999176212'
+
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 RED = (200, 0, 0)
